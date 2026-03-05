@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>South AI — AI Automation Agency</title>
+    <meta name="description" content="South AI is a specialized AI automation agency helping businesses save time and scale faster using Make.com, Zapier, and n8n.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        /* ===== VARIABLES ===== */
+        :root {
+            --bg-primary: #07070a;
+            --bg-secondary: #0d0d14;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-border-hover: rgba(255, 255, 255, 0.12);
+            --text-primary: #eaeaef;
+            --text-secondary: #8a8a9a;
+            --text-muted: #55556a;
+            --accent-1: #6c3fff;
+            --accent-2: #00e5a0;
+            --accent-3: #3b82f6;
+            --accent-glow: rgba(108, 63, 255, 0.35);
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --radius-sm: 10px;
+            --radius-lg: 24px;
+            --ease: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ===== RESET ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; display: block; }
+
+        /* ===== AMBIENT GLOWS ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%; left: -20%;
+            width: 80vw; height: 80vw;
+            background: radial-gradient(circle, rgba(108,63,255,0.07) 0%, transparent 65%);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30%; right: -20%;
+            width: 70vw; height: 70vw;
+            background: radial-gradient(circle, rgba(0,229,160,0.05) 0%, transparent 60%);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ===== GRAIN ===== */
+        .grain {
+            position: fixed; inset: 0; z-index: 9999;
+            pointer-events: none; opacity: 0.028;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 180px;
+        }
+
+        /* ===== LAYOUT ===== */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+        section { padding: 100px 0; position: relative; z-index: 1; }
+
+        /* ===== SECTION ELEMENTS ===== */
+        .label {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono); font-size: 0.75rem;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--accent-2); margin-bottom: 20px;
+            padding: 6px 14px; border-radius: 100px;
+            background: rgba(0,229,160,0.06);
+            border: 1px solid rgba(0,229,160,0.15);
+        }
+        .label i { font-size: 0.65rem; }
+        .stitle {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700; line-height: 1.15;
+            margin-bottom: 16px; letter-spacing: -0.02em;
+        }
+        .ssub { color: var(--text-secondary); font-size: 1.05rem; max-width: 560px; line-height: 1.65; }
+        .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-border-hover), transparent); }
+
+        /* ===== NAV ===== */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 1000; padding: 16px 0;
+            transition: var(--ease); background: transparent;
+        }
+        .nav.scrolled {
+            background: rgba(7,7,10,0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .nav-inner {
+            display: flex; align-items: center; justify-content: space-between;
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+        }
+        .nav-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--font-display); font-weight: 800;
+            font-size: 1.35rem; letter-spacing: -0.03em;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border-radius: 10px; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 0.85rem; color: #fff;
+        }
+        .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+        .nav-links a {
+            font-size: 0.88rem; font-weight: 500;
+            color: var(--text-secondary); transition: var(--ease-fast);
+            position: relative;
+        }
+        .nav-links a:hover { color: var(--text-primary); }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 1.5px; background: var(--accent-2);
+            transition: var(--ease);
+        }
+        .nav-links a:hover::after { width: 100%; }
+        .nav-cta {
+            padding: 10px 22px !important; background: var(--accent-1);
+            color: #fff !important; border-radius: 100px;
+            font-weight: 600 !important; box-shadow: 0 0 20px var(--accent-glow);
+            transition: var(--ease);
+        }
+        .nav-cta:hover { background: #7d52ff; box-shadow: 0 0 30px rgba(108,63,255,0.5); transform: translateY(-1px); }
+        .nav-cta::after { display: none !important; }
+        .menu-btn {
+            display: none; background: none; border: none;
+            color: var(--text-primary); font-size: 1.4rem;
+            cursor: pointer; padding: 8px;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center;
+            padding-top: 120px; padding-bottom: 80px;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(108,63,255,0.1) 0%, transparent 70%);
+            pointer-events: none; animation: heroPulse 6s ease-in-out infinite;
+        }
+        @keyframes heroPulse {
+            0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%,-50%) scale(1.15); }
+        }
+        .hero-grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 80px 80px;
+            mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 70%);
+        }
+        .hero-content { text-align: center; max-width: 820px; margin: 0 auto; position: relative; z-index: 2; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-family: var(--font-mono); font-size: 0.72rem;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--accent-2); padding: 8px 18px;
+            background: rgba(0,229,160,0.06);
+            border: 1px solid rgba(0,229,160,0.15);
+            border-radius: 100px; margin-bottom: 32px;
+            animation: fadeUp 0.8s ease-out;
+        }
+        .pulse-dot {
+            width: 6px; height: 6px; background: var(--accent-2);
+            border-radius: 50%; animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2.6rem, 5.5vw, 4.2rem);
+            font-weight: 800; line-height: 1.08;
+            letter-spacing: -0.035em; margin-bottom: 24px;
+            animation: fadeUp 0.8s ease-out 0.1s both;
+        }
+        .hero h1 .hl {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-sub {
+            font-size: 1.12rem; color: var(--text-secondary);
+            max-width: 600px; margin: 0 auto 40px; line-height: 1.7;
+            animation: fadeUp 0.8s ease-out 0.2s both;
+        }
+        .hero-ctas {
+            display: flex; align-items: center; justify-content: center;
+            gap: 16px; flex-wrap: wrap;
+            animation: fadeUp 0.8s ease-out 0.3s both;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-p {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 16px 34px; background: var(--accent-1); color: #fff;
+            font-family: var(--font-body); font-size: 0.95rem; font-weight: 600;
+            border: none; border-radius: 100px; cursor: pointer;
+            transition: var(--ease); position: relative; overflow: hidden;
+            box-shadow: 0 0 30px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .btn-p::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0; transition: var(--ease);
+        }
+        .btn-p:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(108,63,255,0.5), 0 8px 32px rgba(108,63,255,0.3); }
+        .btn-p:hover::before { opacity: 1; }
+        .btn-s {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 16px 34px; background: transparent; color: var(--text-primary);
+            font-family: var(--font-body); font-size: 0.95rem; font-weight: 600;
+            border: 1px solid var(--glass-border-hover); border-radius: 100px;
+            cursor: pointer; transition: var(--ease);
+        }
+        .btn-s:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+        /* ===== METRICS ===== */
+        .metrics { display: flex; justify-content: center; gap: 40px; margin-top: 64px; animation: fadeUp 0.8s ease-out 0.5s both; }
+        .metric { text-align: center; }
+        .metric-val { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; }
+        .metric-val span { color: var(--accent-2); }
+        .metric-lbl { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* ===== BENTO GRID ===== */
+        .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+        .card {
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg); padding: 36px 32px;
+            position: relative; overflow: hidden; transition: var(--ease);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .card::before {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(108,63,255,0.05), transparent 50%);
+            opacity: 0; transition: var(--ease);
+        }
+        .card:hover { border-color: var(--glass-border-hover); background: var(--bg-card-hover); transform: translateY(-4px); }
+        .card:hover::before { opacity: 1; }
+        .card.span2 { grid-column: span 2; }
+        .card-icon {
+            width: 50px; height: 50px; display: flex;
+            align-items: center; justify-content: center;
+            border-radius: var(--radius-sm); font-size: 1.2rem;
+            margin-bottom: 20px; position: relative; z-index: 1;
+        }
+        .ic-v { background: rgba(108,63,255,0.1); color: var(--accent-1); border: 1px solid rgba(108,63,255,0.15); }
+        .ic-e { background: rgba(0,229,160,0.08); color: var(--accent-2); border: 1px solid rgba(0,229,160,0.12); }
+        .ic-b { background: rgba(59,130,246,0.1); color: var(--accent-3); border: 1px solid rgba(59,130,246,0.15); }
+        .card h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; position: relative; z-index: 1; }
+        .card p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; position: relative; z-index: 1; }
+
+        /* ===== WHY GRID ===== */
+        .wgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 48px; }
+        .wcard {
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg); padding: 36px 32px;
+            transition: var(--ease); backdrop-filter: blur(10px);
+            position: relative; overflow: hidden;
+        }
+        .wcard:hover { border-color: var(--glass-border-hover); transform: translateY(-3px); }
+        .wnum {
+            font-family: var(--font-display); font-size: 3rem; font-weight: 800;
+            color: rgba(108,63,255,0.1); position: absolute;
+            top: 16px; right: 24px; line-height: 1;
+        }
+        .wcard h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+        .wcard p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; }
+
+        /* ===== AUDIENCE ===== */
+        .agrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 48px; }
+        .acard {
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg); padding: 40px 28px;
+            text-align: center; transition: var(--ease);
+        }
+        .acard:hover { border-color: rgba(0,229,160,0.2); transform: translateY(-4px); }
+        .acard .emoji { font-size: 2.4rem; margin-bottom: 18px; display: block; }
+        .acard h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+        .acard p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; }
+
+        /* ===== PORTFOLIO ===== */
+        .pgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 48px; }
+        .pcard {
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg); overflow: hidden;
+            transition: var(--ease);
+        }
+        .pcard:hover { border-color: var(--glass-border-hover); transform: translateY(-4px); }
+        .pvis { height: 200px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .pvis .bg { position: absolute; inset: 0; }
+        .bg1 { background: linear-gradient(135deg, rgba(108,63,255,0.15), rgba(0,229,160,0.08)); }
+        .bg2 { background: linear-gradient(135deg, rgba(0,229,160,0.12), rgba(59,130,246,0.1)); }
+        .bg3 { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(108,63,255,0.1)); }
+        .bg4 { background: linear-gradient(135deg, rgba(108,63,255,0.1), rgba(59,130,246,0.12)); }
+        .flow {
+            position: relative; z-index: 1; display: flex;
+            align-items: center; gap: 12px; padding: 0 32px;
+        }
+        .fnode {
+            width: 44px; height: 44px; border-radius: 12px;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; color: var(--text-secondary); flex-shrink: 0;
+        }
+        .fline {
+            height: 2px; flex: 1;
+            background: linear-gradient(90deg, rgba(108,63,255,0.4), rgba(0,229,160,0.4));
+            position: relative; border-radius: 2px;
+        }
+        .fline::after {
+            content: ''; position: absolute; top: -3px;
+            width: 8px; height: 8px; background: var(--accent-2);
+            border-radius: 50%; animation: flowDot 2.5s ease-in-out infinite;
+            box-shadow: 0 0 8px var(--accent-2);
+        }
+        @keyframes flowDot { 0% { left: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { left: calc(100% - 8px); opacity: 0; } }
+        .pinfo { padding: 28px; }
+        .pinfo h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+        .pinfo p { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+        .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag {
+            font-family: var(--font-mono); font-size: 0.68rem;
+            letter-spacing: 0.04em; padding: 5px 12px;
+            border-radius: 100px; font-weight: 500;
+        }
+        .t-make { background: rgba(108,63,255,0.1); color: #a78bfa; border: 1px solid rgba(108,63,255,0.15); }
+        .t-zap { background: rgba(255,107,0,0.08); color: #ff8c42; border: 1px solid rgba(255,107,0,0.12); }
+        .t-n8n { background: rgba(0,229,160,0.08); color: var(--accent-2); border: 1px solid rgba(0,229,160,0.12); }
+        .t-oai { background: rgba(59,130,246,0.08); color: #60a5fa; border: 1px solid rgba(59,130,246,0.12); }
+        .t-cl { background: rgba(217,119,87,0.1); color: #e8a987; border: 1px solid rgba(217,119,87,0.12); }
+
+        /* ===== CONTACT ===== */
+        .contact-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; margin-top: 48px; }
+        .contact-info { padding-right: 24px; }
+        .hook { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; line-height: 1.35; margin-bottom: 20px; }
+        .hook-sub { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 32px; }
+        .cf-list { display: flex; flex-direction: column; gap: 16px; }
+        .cf-item { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; color: var(--text-secondary); }
+        .cf-item i {
+            color: var(--accent-2); font-size: 0.85rem;
+            width: 32px; height: 32px; display: flex;
+            align-items: center; justify-content: center;
+            background: rgba(0,229,160,0.06);
+            border: 1px solid rgba(0,229,160,0.12);
+            border-radius: 8px; flex-shrink: 0;
+        }
+        .cform {
+            background: var(--bg-card); border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg); padding: 40px;
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
+        .fg { margin-bottom: 20px; }
+        .fg label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; letter-spacing: 0.02em; }
+        .fg input, .fg textarea {
+            width: 100%; padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: var(--font-body); font-size: 0.92rem;
+            transition: var(--ease-fast); outline: none;
+        }
+        .fg input::placeholder, .fg textarea::placeholder { color: var(--text-muted); }
+        .fg input:focus, .fg textarea:focus {
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 3px rgba(108,63,255,0.1);
+            background: rgba(255,255,255,0.04);
+        }
+        .fg textarea { resize: vertical; min-height: 120px; }
+        .submit-btn {
+            width: 100%; padding: 16px; background: var(--accent-1);
+            color: #fff; font-family: var(--font-body); font-size: 0.95rem;
+            font-weight: 600; border: none; border-radius: var(--radius-sm);
+            cursor: pointer; transition: var(--ease);
+            box-shadow: 0 0 24px var(--accent-glow);
+        }
+        .submit-btn:hover { box-shadow: 0 0 40px rgba(108,63,255,0.5); transform: translateY(-1px); }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid var(--glass-border);
+            padding: 40px 0; position: relative; z-index: 1;
+        }
+        .foot-inner { display: flex; align-items: center; justify-content: space-between; }
+        .foot-copy { font-size: 0.82rem; color: var(--text-muted); }
+        .foot-links { display: flex; gap: 24px; }
+        .foot-links a { font-size: 0.82rem; color: var(--text-muted); transition: var(--ease-fast); }
+        .foot-links a:hover { color: var(--text-secondary); }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        .fi { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fi.vis { opacity: 1; transform: translateY(0); }
+        .stg .fi:nth-child(1) { transition-delay: 0s; }
+        .stg .fi:nth-child(2) { transition-delay: 0.08s; }
+        .stg .fi:nth-child(3) { transition-delay: 0.16s; }
+        .stg .fi:nth-child(4) { transition-delay: 0.24s; }
+        .stg .fi:nth-child(5) { transition-delay: 0.32s; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 900px) {
+            .bento { grid-template-columns: 1fr 1fr; }
+            .card.span2 { grid-column: span 2; }
+            .wgrid { grid-template-columns: 1fr 1fr; }
+            .agrid { grid-template-columns: 1fr; }
+            .pgrid { grid-template-columns: 1fr; }
+            .contact-wrap { grid-template-columns: 1fr; }
+            .metrics { gap: 24px; }
+        }
+        @media (max-width: 700px) {
+            section { padding: 64px 0; }
+            .nav-links {
+                display: none; position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(7,7,10,0.96);
+                backdrop-filter: blur(20px);
+                flex-direction: column; justify-content: center;
+                align-items: center; gap: 32px; z-index: 999;
+            }
+            .nav-links.open { display: flex; }
+            .nav-links a { font-size: 1.2rem; }
+            .menu-btn { display: block; z-index: 1001; }
+            .bento { grid-template-columns: 1fr; }
+            .card.span2 { grid-column: span 1; }
+            .wgrid { grid-template-columns: 1fr; }
+            .metrics { flex-direction: column; gap: 16px; }
+            .hero h1 { font-size: 2.2rem; }
+            .foot-inner { flex-direction: column; gap: 16px; text-align: center; }
+            .cform { padding: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- NAV -->
+    <nav class="nav" id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+                South AI
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#why">Why Us</a></li>
+                <li><a href="#audience">Who It's For</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+            </ul>
+            <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars" id="menuIcon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge"><span class="pulse-dot"></span> AI Automation Agency</div>
+                <h1>Are you wasting hours on repetitive tasks? <span class="hl">We'll automate them for you.</span></h1>
+                <p class="hero-sub">South AI is a specialized AI automation agency helping businesses save time and scale faster using Make.com, Zapier, and n8n.</p>
+                <div class="hero-ctas">
+                    <a href="#contact" class="btn-p">Discuss Your Project <i class="fa-solid fa-arrow-right"></i></a>
+                    <a href="#portfolio" class="btn-s">View Portfolio <i class="fa-solid fa-grid-2"></i></a>
+                </div>
+                <div class="metrics">
+                    <div class="metric"><div class="metric-val">50<span>+</span></div><div class="metric-lbl">Automations built</div></div>
+                    <div class="metric"><div class="metric-val">10k<span>+</span></div><div class="metric-lbl">Hours saved for clients</div></div>
+                    <div class="metric"><div class="metric-val">100<span>%</span></div><div class="metric-lbl">On-time delivery</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SERVICES -->
+    <section id="services">
+        <div class="container">
+            <div class="label"><i class="fa-solid fa-cube"></i> What we build</div>
+            <h2 class="stitle">Services</h2>
+            <p class="ssub">We design and build intelligent automation systems that eliminate repetitive work and let your team focus on what matters.</p>
+            <div class="bento stg">
+                <div class="card span2 fi">
+                    <div class="card-icon ic-v"><i class="fa-solid fa-microchip"></i></div>
+                    <h3>AI-Powered Workflow Automation</h3>
+                    <p>Custom workflows powered by GPT, Claude, and Gemini that handle complex decision-making, data processing, and content generation — on autopilot.</p>
+                </div>
+                <div class="card fi">
+                    <div class="card-icon ic-e"><i class="fa-solid fa-plug"></i></div>
+                    <h3>App-to-App Integrations &amp; API Connections</h3>
+                    <p>Seamlessly connect your entire tech stack so data flows automatically between tools without manual handoffs.</p>
+                </div>
+                <div class="card fi">
+                    <div class="card-icon ic-b"><i class="fa-solid fa-bullseye"></i></div>
+                    <h3>Lead Generation &amp; CRM Automation</h3>
+                    <p>Automate lead capture, scoring, routing, and follow-ups so your sales team only talks to qualified prospects.</p>
+                </div>
+                <div class="card fi">
+                    <div class="card-icon ic-e"><i class="fa-solid fa-envelope-open-text"></i></div>
+                    <h3>Email &amp; Notification Automation</h3>
+                    <p>Smart triggers for drip campaigns, transactional emails, Slack alerts, and multi-channel notifications.</p>
+                </div>
+                <div class="card fi">
+                    <div class="card-icon ic-v"><i class="fa-solid fa-database"></i></div>
+                    <h3>Database Integration &amp; Data Sync</h3>
+                    <p>Keep your databases, spreadsheets, and apps perfectly in sync with real-time bi-directional data flows.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- WHY US -->
+    <section id="why">
+        <div class="container">
+            <div class="label"><i class="fa-solid fa-shield-halved"></i> About us</div>
+            <h2 class="stitle">Why South AI?</h2>
+            <p class="ssub">We're a lean, focused team that builds automation systems you can actually rely on.</p>
+            <div class="wgrid stg">
+                <div class="wcard fi"><span class="wnum">01</span><h3>3-Person Dedicated Team</h3><p>Small by design. Our focused team means faster delivery, direct communication, and no layers of bureaucracy between you and the people doing the work.</p></div>
+                <div class="wcard fi"><span class="wnum">02</span><h3>GPT, Claude &amp; Gemini Inside</h3><p>We use the best AI models available — GPT, Claude, and Gemini — to create automations that don't just move data but actually think and make decisions.</p></div>
+                <div class="wcard fi"><span class="wnum">03</span><h3>Clean &amp; Scalable Workflows</h3><p>Every workflow is documented, modular, and built to scale. No spaghetti logic — just clean systems that grow with your business.</p></div>
+                <div class="wcard fi"><span class="wnum">04</span><h3>Fast Communication &amp; On-Time Delivery</h3><p>We respond within hours, not days. Every project ships on schedule with clear timelines and zero surprises.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- AUDIENCE -->
+    <section id="audience">
+        <div class="container">
+            <div class="label"><i class="fa-solid fa-users"></i> Who this is for</div>
+            <h2 class="stitle">Built for teams that move fast</h2>
+            <p class="ssub">If you're tired of repetitive manual work, we're built for you.</p>
+            <div class="agrid stg">
+                <div class="acard fi"><span class="emoji">🚀</span><h3>Startups</h3><p>Looking to automate operations from day one and build a lean, scalable infrastructure without hiring a full ops team.</p></div>
+                <div class="acard fi"><span class="emoji">🏢</span><h3>Small Businesses</h3><p>Eliminating manual work across sales, marketing, and operations so your team can focus on growth, not data entry.</p></div>
+                <div class="acard fi"><span class="emoji">⚡</span><h3>Agencies</h3><p>Scaling client workflows and internal processes with automation that keeps quality high as you take on more clients.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- PORTFOLIO -->
+    <section id="portfolio">
+        <div class="container">
+            <div class="label"><i class="fa-solid fa-folder-open"></i> Our work</div>
+            <h2 class="stitle">Portfolio</h2>
+            <p class="ssub">A look at some of the automation systems we've built for clients.</p>
+            <div class="pgrid stg">
+                <div class="pcard fi">
+                    <div class="pvis"><div class="bg bg1"></div><div class="flow"><div class="fnode"><i class="fa-solid fa-user-plus"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-robot"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-chart-line"></i></div></div></div>
+                    <div class="pinfo"><h3>Automated CRM Lead Routing</h3><p>Built a multi-step automation that captures leads from 4 sources, scores them with GPT, and routes to the right sales rep in HubSpot — instantly.</p><div class="tags"><span class="tag t-make">Make</span><span class="tag t-oai">OpenAI</span></div></div>
+                </div>
+                <div class="pcard fi">
+                    <div class="pvis"><div class="bg bg2"></div><div class="flow"><div class="fnode"><i class="fa-solid fa-comment-dots"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-brain"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-reply"></i></div></div></div>
+                    <div class="pinfo"><h3>AI Customer Support Agent</h3><p>Deployed a Claude-powered support agent that resolves 70% of tickets automatically, escalating complex issues to humans with full context.</p><div class="tags"><span class="tag t-n8n">n8n</span><span class="tag t-cl">Claude</span></div></div>
+                </div>
+                <div class="pcard fi">
+                    <div class="pvis"><div class="bg bg3"></div><div class="flow"><div class="fnode"><i class="fa-solid fa-envelope"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-filter"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-paper-plane"></i></div></div></div>
+                    <div class="pinfo"><h3>Multi-Channel Drip Campaign Engine</h3><p>Automated a 12-step email + SMS nurture sequence that adapts messaging based on user behavior and engagement signals.</p><div class="tags"><span class="tag t-zap">Zapier</span><span class="tag t-oai">OpenAI</span></div></div>
+                </div>
+                <div class="pcard fi">
+                    <div class="pvis"><div class="bg bg4"></div><div class="flow"><div class="fnode"><i class="fa-solid fa-database"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-arrows-rotate"></i></div><div class="fline"></div><div class="fnode"><i class="fa-solid fa-table-cells"></i></div></div></div>
+                    <div class="pinfo"><h3>Real-Time Inventory Data Sync</h3><p>Built a bi-directional sync between Airtable, Shopify, and Google Sheets — keeping inventory, orders, and pricing always up to date.</p><div class="tags"><span class="tag t-make">Make</span><span class="tag t-n8n">n8n</span></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- CONTACT -->
+    <section id="contact">
+        <div class="container">
+            <div class="label"><i class="fa-solid fa-paper-plane"></i> Let's talk</div>
+            <h2 class="stitle">Start your project</h2>
+            <div class="contact-wrap">
+                <div class="contact-info">
+                    <p class="hook">Whether you need a simple 3-step automation or a full multi-workflow AI system, we deliver results fast.</p>
+                    <p class="hook-sub">Message us before ordering to discuss your project — we respond within hours.</p>
+                    <div class="cf-list">
+                        <div class="cf-item"><i class="fa-solid fa-clock"></i> Response within hours, not days</div>
+                        <div class="cf-item"><i class="fa-solid fa-comments"></i> Free project consultation</div>
+                        <div class="cf-item"><i class="fa-solid fa-lock"></i> NDA available on request</div>
+                        <div class="cf-item"><i class="fa-solid fa-rotate-left"></i> Revisions until you're happy</div>
+                    </div>
+                </div>
+                <div class="cform">
+                    <div class="fg"><label for="name">Your Name</label><input type="text" id="name" placeholder="John Doe"></div>
+                    <div class="fg"><label for="email">Email Address</label><input type="email" id="email" placeholder="john@company.com"></div>
+                    <div class="fg"><label for="details">Project Details</label><textarea id="details" placeholder="Tell us about the workflows you want to automate, your current tools, and your timeline..."></textarea></div>
+                    <button class="submit-btn" id="submitBtn">Send Message <i class="fa-solid fa-arrow-right" style="margin-left:8px"></i></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="foot-inner">
+                <div class="foot-copy">&copy; 2025 South AI. All rights reserved.</div>
+                <div class="foot-links">
+                    <a href="#services">Services</a>
+                    <a href="#portfolio">Portfolio</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        var nb = document.getElementById('navbar');
+        window.addEventListener('scroll', function() { nb.classList.toggle('scrolled', window.scrollY > 40); });
+
+        var mb = document.getElementById('menuBtn');
+        var nl = document.getElementById('navLinks');
+        var mi = document.getElementById('menuIcon');
+        mb.addEventListener('click', function() {
+            nl.classList.toggle('open');
+            mi.className = nl.classList.contains('open') ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+        });
+        nl.querySelectorAll('a').forEach(function(l) {
+            l.addEventListener('click', function() { nl.classList.remove('open'); mi.className = 'fa-solid fa-bars'; });
+        });
+
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('vis'); });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.fi').forEach(function(el) { obs.observe(el); });
+
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            var b = this;
+            b.innerHTML = '<i class="fa-solid fa-check" style="margin-right:8px"></i> Message Sent!';
+            b.style.background = '#00e5a0';
+            b.style.boxShadow = '0 0 30px rgba(0,229,160,0.35)';
+            setTimeout(function() {
+                b.innerHTML = 'Send Message <i class="fa-solid fa-arrow-right" style="margin-left:8px"></i>';
+                b.style.background = '';
+                b.style.boxShadow = '';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
